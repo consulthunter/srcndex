@@ -10,7 +10,7 @@ git information for the code files, iterating over every commit for the project.
 project documentation putting the documentation in a vector database, `Chroma`.
 
 Finally, Mimir saves the extracted code data in a SQLite `code_data.db` and the extracted documentation
-in a `docs` folder as `chroma.sqlite3`
+in a `docs` folder as `chroma.sqlite3`. All under the project's name in the `output` directory.
 
 ## Installation
 

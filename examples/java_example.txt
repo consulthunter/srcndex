@@ -1,5 +1,1 @@
-https://github.com/wg/scrypt
-https://github.com/groovy/groovy-core
-https://github.com/joestelmach/natty
-https://github.com/sstrickx/yahoofinance-api
-https://github.com/pedrovgs/Renderers
+https://github.com/apache/kafka

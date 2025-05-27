@@ -6,6 +6,8 @@ from typing import List
 class ClassModel:
     def __init__(self):
         self.name = ""
+        self.superclass = ""
+        self.interfaces = []
         self.modifiers = []
         self.properties = []
         self.methods: List[MethodModel] = []
@@ -17,8 +19,10 @@ class ClassModel:
     def to_dict(self):
         return {
             "name": self.name,
+            "superclass": self.superclass,
             "modifiers": self.modifiers,
             "properties": self.properties,
+            "interfaces": self.interfaces,
             "methods": [method.to_dict() for method in self.methods],
             "start_lin_no": self.start_lin_no,
             "start_pos": self.start_pos,
