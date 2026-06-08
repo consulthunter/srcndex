@@ -1,0 +1,46 @@
+[project]
+name = "mimir"
+version = "0.1.0"
+description = "Repository-level code indexer for use with agents"
+readme = "README.md"
+authors = [
+    { name = "consulthunter", email = "112510846+consulthunter@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic>=2.13.4",
+    "pygit2>=1.19.2",
+    "tree-sitter>=0.25.2",
+    "tree-sitter-java>=0.23.5",
+    "tree-sitter-python>=0.25.0",
+    "tree-sitter-typescript>=0.23.2",
+    "tree-sitter-c-sharp>=0.23.5",
+    "watchdog>=6.0.0",
+]
+
+[project.scripts]
+mimir = "mimir.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "ruff>=0.15.16",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.15,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["mimir"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
