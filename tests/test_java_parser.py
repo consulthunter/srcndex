@@ -1,9 +1,9 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import pytest
 
-from mimir.models import SymbolKind, Visibility
-from mimir.parsers.java import JavaParser
+from srcndx.models import SymbolKind, Visibility
+from srcndx.parsers.java import JavaParser
 
 SIMPLE_CLASS = b"""
 public class Calculator {

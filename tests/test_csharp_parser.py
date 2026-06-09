@@ -1,9 +1,9 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import pytest
 
-from mimir.models import SymbolKind, Visibility
-from mimir.parsers.csharp import CSharpParser
+from srcndx.models import SymbolKind, Visibility
+from srcndx.parsers.csharp import CSharpParser
 
 SIMPLE_CLASS = b"""
 namespace MyApp {

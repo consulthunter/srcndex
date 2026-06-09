@@ -1,16 +1,17 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import tree_sitter_python
 from tree_sitter import Language, Node
 
-from mimir.models import (
+from srcndx.analysis import classify_test, detect_endpoint, detect_test_framework
+from srcndx.models import (
     GitStatus,
     IndexedFile,
     IndexedSymbol,
     SymbolKind,
     Visibility,
 )
-from mimir.parsers.base import BaseParser
+from srcndx.parsers.base import BaseParser
 
 
 def _visibility(name: str) -> Visibility:
@@ -60,6 +61,7 @@ class PythonParser(BaseParser):
             churn_count=0,
             symbols=symbols,
             imports=imports,
+            test_framework=detect_test_framework(imports, "python"),
         )
 
     def _extract_imports(self, root: Node, source: bytes) -> list[str]:
@@ -132,6 +134,10 @@ class PythonParser(BaseParser):
         sig = self.node_text(node, source).split(":")[0].strip() + ":"
         is_test = _is_test(name, file_path, decorators or [])
 
+        anns = decorators or []
+        is_ep, http_method, route_path = detect_endpoint(anns)
+        tk = classify_test(file_path, anns) if is_test else None
+
         symbols.append(
             IndexedSymbol(
                 name=name,
@@ -143,7 +149,11 @@ class PythonParser(BaseParser):
                 visibility=_visibility(name),
                 is_test=is_test,
                 signature=sig,
-                annotations=decorators or [],
+                annotations=anns,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )
 
@@ -174,6 +184,10 @@ class PythonParser(BaseParser):
         sig_end = body.start_byte if body else node.end_byte
         sig = source[node.start_byte:sig_end].decode("utf-8", errors="replace").rstrip().rstrip(":")
 
+        is_test = _is_test(name, file_path, decorators)
+        is_ep, http_method, route_path = detect_endpoint(decorators)
+        tk = classify_test(file_path, decorators) if is_test else None
+
         symbols.append(
             IndexedSymbol(
                 name=name,
@@ -183,8 +197,12 @@ class PythonParser(BaseParser):
                 start_line=node.start_point[0] + 1,
                 end_line=node.end_point[0] + 1,
                 visibility=_visibility(name),
-                is_test=_is_test(name, file_path, decorators),
+                is_test=is_test,
                 signature=sig,
                 annotations=decorators,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )

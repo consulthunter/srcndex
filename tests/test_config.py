@@ -1,10 +1,10 @@
-from pathlib import Path
+﻿from pathlib import Path
 
-from mimir.config import MimirConfig, load_config
+from srcndx.config import SrcndxConfig, load_config
 
 
 def test_default_config_values() -> None:
-    cfg = MimirConfig()
+    cfg = SrcndxConfig()
     assert cfg.debounce_seconds == 15.0
     assert cfg.watch_tracked_files is True
     assert ".git" in cfg.exclude_dirs
@@ -17,12 +17,12 @@ def test_default_config_values() -> None:
 
 def test_load_config_missing_file(tmp_path: Path) -> None:
     cfg = load_config(tmp_path)
-    assert isinstance(cfg, MimirConfig)
+    assert isinstance(cfg, SrcndxConfig)
     assert cfg.debounce_seconds == 15.0
 
 
 def test_load_config_from_toml(tmp_path: Path) -> None:
-    (tmp_path / ".mimir.toml").write_text(
+    (tmp_path / ".srcndx.toml").write_text(
         'debounce_seconds = 5.0\n'
         'watch_tracked_files = false\n'
         'exclude_dirs = ["node_modules", ".git"]\n'
@@ -38,7 +38,7 @@ def test_load_config_from_toml(tmp_path: Path) -> None:
 
 
 def test_load_config_extra_tracked_extensions(tmp_path: Path) -> None:
-    (tmp_path / ".mimir.toml").write_text(
+    (tmp_path / ".srcndx.toml").write_text(
         '[extra_tracked_extensions]\n'
         '".proto" = "protobuf"\n'
         '".avro" = "avro"\n'
@@ -49,7 +49,7 @@ def test_load_config_extra_tracked_extensions(tmp_path: Path) -> None:
 
 
 def test_load_config_extra_tracked_names(tmp_path: Path) -> None:
-    (tmp_path / ".mimir.toml").write_text(
+    (tmp_path / ".srcndx.toml").write_text(
         '[extra_tracked_names]\n'
         '"Jenkinsfile" = "groovy"\n'
     )
@@ -58,14 +58,14 @@ def test_load_config_extra_tracked_names(tmp_path: Path) -> None:
 
 
 def test_default_excludes_are_independent_instances() -> None:
-    a = MimirConfig()
-    b = MimirConfig()
+    a = SrcndxConfig()
+    b = SrcndxConfig()
     a.exclude_dirs.append("custom")
     assert "custom" not in b.exclude_dirs
 
 
 def test_additional_exclude_dirs_merges_with_defaults() -> None:
-    cfg = MimirConfig(additional_exclude_dirs=["vendor", "fixtures"])
+    cfg = SrcndxConfig(additional_exclude_dirs=["vendor", "fixtures"])
     effective = cfg.effective_exclude_dirs
     assert "vendor" in effective
     assert "fixtures" in effective
@@ -74,7 +74,7 @@ def test_additional_exclude_dirs_merges_with_defaults() -> None:
 
 
 def test_effective_exclude_dirs_is_union() -> None:
-    cfg = MimirConfig(
+    cfg = SrcndxConfig(
         exclude_dirs=["custom"],
         additional_exclude_dirs=["extra"],
     )
@@ -85,7 +85,7 @@ def test_effective_exclude_dirs_is_union() -> None:
 
 
 def test_load_config_additional_exclude_dirs(tmp_path: Path) -> None:
-    (tmp_path / ".mimir.toml").write_text(
+    (tmp_path / ".srcndx.toml").write_text(
         'additional_exclude_dirs = ["vendor", "fixtures"]\n'
     )
     cfg = load_config(tmp_path)
@@ -94,18 +94,18 @@ def test_load_config_additional_exclude_dirs(tmp_path: Path) -> None:
 
 
 def test_default_max_file_size_kb() -> None:
-    cfg = MimirConfig()
+    cfg = SrcndxConfig()
     assert cfg.max_file_size_kb == 500
 
 
 def test_default_persist_cache() -> None:
-    cfg = MimirConfig()
+    cfg = SrcndxConfig()
     assert cfg.persist_cache is False
-    assert cfg.cache_file == ".mimir-cache.json"
+    assert cfg.cache_file == ".srcndx-cache.json"
 
 
 def test_load_config_persist_cache_and_limits(tmp_path: Path) -> None:
-    (tmp_path / ".mimir.toml").write_text(
+    (tmp_path / ".srcndx.toml").write_text(
         "persist_cache = true\n"
         'cache_file = "custom-cache.json"\n'
         "max_file_size_kb = 250\n"

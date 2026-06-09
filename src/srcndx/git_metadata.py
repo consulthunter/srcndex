@@ -1,8 +1,8 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import pygit2
 
-from mimir.models import GitStatus
+from srcndx.models import GitStatus
 
 
 def load_repo(repo_path: Path) -> pygit2.Repository | None:

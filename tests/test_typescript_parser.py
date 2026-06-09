@@ -1,9 +1,9 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import pytest
 
-from mimir.models import SymbolKind, Visibility
-from mimir.parsers.typescript import TypeScriptParser
+from srcndx.models import SymbolKind, Visibility
+from srcndx.parsers.typescript import TypeScriptParser
 
 SIMPLE_CLASS = b"""
 class PaymentService {

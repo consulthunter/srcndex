@@ -1,16 +1,17 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import tree_sitter_typescript
 from tree_sitter import Language, Node
 
-from mimir.models import (
+from srcndx.analysis import classify_test, detect_endpoint, detect_test_framework
+from srcndx.models import (
     GitStatus,
     IndexedFile,
     IndexedSymbol,
     SymbolKind,
     Visibility,
 )
-from mimir.parsers.base import BaseParser
+from srcndx.parsers.base import BaseParser
 
 _VISIBILITY_KEYWORDS = {"public", "private", "protected"}
 
@@ -66,14 +67,16 @@ class TypeScriptParser(BaseParser):
         imports = self._extract_imports(tree.root_node, source)
         self._walk(tree.root_node, source, rel_path, symbols, parent=None)
 
+        lang = "tsx" if self._tsx else "typescript"
         return IndexedFile(
             path=rel_path,
-            language="tsx" if self._tsx else "typescript",
+            language=lang,
             content_hash=content_hash,
             git_status=GitStatus.UNCHANGED,
             churn_count=0,
             symbols=symbols,
             imports=imports,
+            test_framework=detect_test_framework(imports, lang),
         )
 
     def _extract_imports(self, root: Node, source: bytes) -> list[str]:
@@ -130,6 +133,9 @@ class TypeScriptParser(BaseParser):
 
         sig = self.node_text(node, source).split("{")[0].strip()
         annotations = _collect_decorators(node, source)
+        is_test = _is_test(name, file_path)
+        is_ep, http_method, route_path = detect_endpoint(annotations)
+        tk = classify_test(file_path, annotations) if is_test else None
 
         symbols.append(
             IndexedSymbol(
@@ -140,9 +146,13 @@ class TypeScriptParser(BaseParser):
                 start_line=node.start_point[0] + 1,
                 end_line=node.end_point[0] + 1,
                 visibility=Visibility.PUBLIC,
-                is_test=_is_test(name, file_path),
+                is_test=is_test,
                 signature=sig,
                 annotations=annotations,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )
 
@@ -198,6 +208,9 @@ class TypeScriptParser(BaseParser):
         sig_end = body.start_byte if body else node.end_byte
         sig = source[node.start_byte:sig_end].decode("utf-8", errors="replace").strip()
         annotations = _collect_decorators(node, source)
+        is_test = _is_test(name, file_path)
+        is_ep, http_method, route_path = detect_endpoint(annotations)
+        tk = classify_test(file_path, annotations) if is_test else None
 
         symbols.append(
             IndexedSymbol(
@@ -208,9 +221,13 @@ class TypeScriptParser(BaseParser):
                 start_line=node.start_point[0] + 1,
                 end_line=node.end_point[0] + 1,
                 visibility=Visibility.PUBLIC,
-                is_test=_is_test(name, file_path),
+                is_test=is_test,
                 signature=sig,
                 annotations=annotations,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )
 
@@ -235,6 +252,9 @@ class TypeScriptParser(BaseParser):
         sig_end = body.start_byte if body else node.end_byte
         sig = source[node.start_byte:sig_end].decode("utf-8", errors="replace").strip()
         annotations = _collect_decorators(node, source)
+        is_test = _is_test(name, file_path)
+        is_ep, http_method, route_path = detect_endpoint(annotations)
+        tk = classify_test(file_path, annotations) if is_test else None
 
         symbols.append(
             IndexedSymbol(
@@ -245,9 +265,13 @@ class TypeScriptParser(BaseParser):
                 start_line=node.start_point[0] + 1,
                 end_line=node.end_point[0] + 1,
                 visibility=vis,
-                is_test=_is_test(name, file_path),
+                is_test=is_test,
                 signature=sig,
                 annotations=annotations,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )
 

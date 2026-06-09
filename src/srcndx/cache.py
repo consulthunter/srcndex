@@ -1,9 +1,9 @@
-import hashlib
+﻿import hashlib
 import json
 from pathlib import Path
 
-from mimir.log import get_logger
-from mimir.models import IndexedFile
+from srcndx.log import get_logger
+from srcndx.models import IndexedFile
 
 _log = get_logger()
 

@@ -1,8 +1,8 @@
-from pathlib import Path
+﻿from pathlib import Path
 
-from mimir.cache import ScanCache
-from mimir.config import MimirConfig
-from mimir.scanner import scan
+from srcndx.cache import ScanCache
+from srcndx.config import SrcndxConfig
+from srcndx.scanner import scan
 
 JAVA_SOURCE = b"""
 public class Service {
@@ -165,7 +165,7 @@ def test_scan_excludes_dir(tmp_path: Path) -> None:
         "src/Service.java": JAVA_SOURCE,
         "vendor/Lib.java": JAVA_SOURCE,
     })
-    cfg = MimirConfig(exclude_dirs=["vendor"])
+    cfg = SrcndxConfig(exclude_dirs=["vendor"])
     result = scan(tmp_path, config=cfg)
     all_paths = [f.path for p in result.projects for f in p.files]
     assert not any("vendor" in p for p in all_paths)
@@ -177,7 +177,7 @@ def test_scan_excludes_extension(tmp_path: Path) -> None:
         "src/Service.java": JAVA_SOURCE,
         "package.lock": b"locked",
     })
-    cfg = MimirConfig(exclude_extensions=[".lock"], extra_tracked_extensions={".lock": "lockfile"})
+    cfg = SrcndxConfig(exclude_extensions=[".lock"], extra_tracked_extensions={".lock": "lockfile"})
     result = scan(tmp_path, config=cfg)
     all_paths = [f.path for p in result.projects for f in p.files]
     assert not any(p.endswith(".lock") for p in all_paths)
@@ -188,7 +188,7 @@ def test_scan_excludes_file(tmp_path: Path) -> None:
         "src/Service.java": JAVA_SOURCE,
         "package-lock.json": b"{}",
     })
-    cfg = MimirConfig(exclude_files=["package-lock.json"])
+    cfg = SrcndxConfig(exclude_files=["package-lock.json"])
     result = scan(tmp_path, config=cfg)
     all_paths = [f.path for p in result.projects for f in p.files]
     assert "package-lock.json" not in all_paths
@@ -199,7 +199,7 @@ def test_scan_extra_tracked_extension(tmp_path: Path) -> None:
         "src/Service.java": JAVA_SOURCE,
         "schema.proto": b'syntax = "proto3";',
     })
-    cfg = MimirConfig(extra_tracked_extensions={".proto": "protobuf"})
+    cfg = SrcndxConfig(extra_tracked_extensions={".proto": "protobuf"})
     result = scan(tmp_path, config=cfg)
     all_files = [f for p in result.projects for f in p.files]
     proto = next((f for f in all_files if f.path.endswith(".proto")), None)
@@ -213,7 +213,7 @@ def test_scan_extra_tracked_name(tmp_path: Path) -> None:
         "src/Service.java": JAVA_SOURCE,
         "Jenkinsfile": b"pipeline {}",
     })
-    cfg = MimirConfig(extra_tracked_names={"Jenkinsfile": "groovy"})
+    cfg = SrcndxConfig(extra_tracked_names={"Jenkinsfile": "groovy"})
     result = scan(tmp_path, config=cfg)
     all_files = [f for p in result.projects for f in p.files]
     jenkins = next((f for f in all_files if f.path == "Jenkinsfile"), None)
@@ -226,7 +226,7 @@ def test_scan_additional_exclude_dirs(tmp_path: Path) -> None:
         "src/Service.java": JAVA_SOURCE,
         "fixtures/Stub.java": JAVA_SOURCE,
     })
-    cfg = MimirConfig(additional_exclude_dirs=["fixtures"])
+    cfg = SrcndxConfig(additional_exclude_dirs=["fixtures"])
     result = scan(tmp_path, config=cfg)
     all_paths = [f.path for p in result.projects for f in p.files]
     assert not any("fixtures" in p for p in all_paths)
@@ -238,7 +238,7 @@ def test_scan_auto_loads_config_file(tmp_path: Path) -> None:
         "src/Service.java": JAVA_SOURCE,
         "vendor/Lib.java": JAVA_SOURCE,
     })
-    (tmp_path / ".mimir.toml").write_text('exclude_dirs = ["vendor"]\n')
+    (tmp_path / ".srcndx.toml").write_text('exclude_dirs = ["vendor"]\n')
     result = scan(tmp_path)
     all_paths = [f.path for p in result.projects for f in p.files]
     assert not any("vendor" in p for p in all_paths)
@@ -249,7 +249,7 @@ def test_scan_skips_large_files(tmp_path: Path) -> None:
         "src/Service.java": JAVA_SOURCE,
         "src/Large.java": b"x" * (501 * 1024),
     })
-    cfg = MimirConfig(max_file_size_kb=500)
+    cfg = SrcndxConfig(max_file_size_kb=500)
     result = scan(tmp_path, config=cfg)
     all_paths = [f.path for p in result.projects for f in p.files]
     assert not any("Large.java" in p for p in all_paths)
@@ -277,14 +277,14 @@ def test_scan_files_sorted_by_path(tmp_path: Path) -> None:
 
 def test_scan_persist_cache_creates_file(tmp_path: Path) -> None:
     _make_repo(tmp_path, {"src/Service.java": JAVA_SOURCE})
-    cfg = MimirConfig(persist_cache=True, cache_file=".test-cache.json")
+    cfg = SrcndxConfig(persist_cache=True, cache_file=".test-cache.json")
     scan(tmp_path, config=cfg)
     assert (tmp_path / ".test-cache.json").exists()
 
 
 def test_scan_persist_cache_second_call_skips(tmp_path: Path) -> None:
     _make_repo(tmp_path, {"src/Service.java": JAVA_SOURCE})
-    cfg = MimirConfig(persist_cache=True, cache_file=".test-cache.json")
+    cfg = SrcndxConfig(persist_cache=True, cache_file=".test-cache.json")
     scan(tmp_path, config=cfg)
     r2 = scan(tmp_path, config=cfg)
     assert r2.files_skipped == 1

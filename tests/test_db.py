@@ -1,8 +1,8 @@
-import sqlite3
+﻿import sqlite3
 from pathlib import Path
 
-from mimir.cli.db import write
-from mimir.scanner import scan
+from srcndx.cli.db import write
+from srcndx.scanner import scan
 
 JAVA_SOURCE = b"""
 public class Greeter {

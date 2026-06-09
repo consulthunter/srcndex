@@ -1,11 +1,11 @@
-import threading
+﻿import threading
 from collections.abc import Generator
 from pathlib import Path
 
 import tree_sitter
 from tree_sitter import Language, Node, Parser
 
-from mimir.models import IndexedFile
+from srcndx.models import IndexedFile
 
 
 class BaseParser:

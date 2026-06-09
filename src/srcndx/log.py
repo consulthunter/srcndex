@@ -1,20 +1,20 @@
-import logging
+﻿import logging
 from pathlib import Path
 
 # Library-friendly: no output unless the caller configures a handler.
-logging.getLogger("mimir").addHandler(logging.NullHandler())
+logging.getLogger("srcndx").addHandler(logging.NullHandler())
 
 _FMT = "%(asctime)s %(levelname)-8s %(message)s"
 _DATE_FMT = "%Y-%m-%dT%H:%M:%S"
 
 
 def get_logger() -> logging.Logger:
-    return logging.getLogger("mimir")
+    return logging.getLogger("srcndx")
 
 
 def configure(log_file: str | Path, level: str = "INFO") -> None:
     """Attach a rotating file handler to the mimir logger."""
-    logger = logging.getLogger("mimir")
+    logger = logging.getLogger("srcndx")
     path = Path(log_file)
     path.parent.mkdir(parents=True, exist_ok=True)
     handler = logging.FileHandler(path, encoding="utf-8")

@@ -1,26 +1,26 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
+﻿from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from pathlib import Path
 from time import monotonic
 
 import pygit2
 
-from mimir.cache import ScanCache, file_hash
-from mimir.config import MimirConfig, load_config
-from mimir.git_metadata import churn_map, file_status, head_commit, load_repo
-from mimir.log import get_logger
-from mimir.models import (
+from srcndx.cache import ScanCache, file_hash
+from srcndx.config import SrcndxConfig, load_config
+from srcndx.git_metadata import churn_map, file_status, head_commit, load_repo
+from srcndx.log import get_logger
+from srcndx.models import (
     GitStatus,
     IndexedFile,
     IndexedProject,
     ProjectKind,
     ScanResult,
 )
-from mimir.parsers.base import BaseParser
-from mimir.parsers.csharp import CSharpParser
-from mimir.parsers.java import JavaParser
-from mimir.parsers.python import PythonParser
-from mimir.parsers.typescript import TypeScriptParser
+from srcndx.parsers.base import BaseParser
+from srcndx.parsers.csharp import CSharpParser
+from srcndx.parsers.java import JavaParser
+from srcndx.parsers.python import PythonParser
+from srcndx.parsers.typescript import TypeScriptParser
 
 _log = get_logger()
 
@@ -78,7 +78,7 @@ _BUILD_FILES: dict[str, ProjectKind] = {
 
 
 def _detect_projects(
-    repo_root: Path, config: MimirConfig
+    repo_root: Path, config: SrcndxConfig
 ) -> list[tuple[Path, ProjectKind, str]]:
     exclude_dirs = config.effective_exclude_dirs
     found: list[tuple[Path, ProjectKind, str]] = []
@@ -99,7 +99,7 @@ def _detect_projects(
     return found
 
 
-def _language(path: Path, config: MimirConfig | None = None) -> str | None:
+def _language(path: Path, config: SrcndxConfig | None = None) -> str | None:
     """Return the language tag for a file, or None if it should not be indexed."""
     suffix = path.suffix.lower()
     if suffix in _PARSERS:
@@ -116,7 +116,7 @@ def _language(path: Path, config: MimirConfig | None = None) -> str | None:
     return tracked_names.get(path.name)
 
 
-def _is_excluded(path: Path, root: Path, config: MimirConfig) -> bool:
+def _is_excluded(path: Path, root: Path, config: SrcndxConfig) -> bool:
     parts = path.relative_to(root).parts
     if any(p in config.effective_exclude_dirs for p in parts[:-1]):
         return True
@@ -159,7 +159,7 @@ def _parse_file(
 def scan(
     repo_path: str | Path,
     cache: ScanCache | None = None,
-    config: MimirConfig | None = None,
+    config: SrcndxConfig | None = None,
 ) -> ScanResult:
     root = Path(repo_path).resolve()
     if config is None:
@@ -299,7 +299,7 @@ def scan_file(
     repo: pygit2.Repository | None = None,
     churns: dict[str, int] | None = None,
     cache: ScanCache | None = None,
-    config: MimirConfig | None = None,
+    config: SrcndxConfig | None = None,
 ) -> IndexedFile | None:
     """Re-index a single file; used for incremental updates."""
     path = Path(file_path).resolve()

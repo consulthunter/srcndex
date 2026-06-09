@@ -1,5 +1,5 @@
 [project]
-name = "mimir"
+name = "srcndx"
 version = "0.1.0"
 description = "Repository-level code indexer for use with agents"
 readme = "README.md"
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-mimir = "mimir.cli:main"
+srcndx = "srcndx.cli:main"
 
 [dependency-groups]
 dev = [
@@ -40,7 +40,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["mimir"]
+known-first-party = ["srcndx"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,6 +1,6 @@
-from collections.abc import Generator
+﻿from collections.abc import Generator
 
-from mimir.watcher import FileChangedEvent, Watcher
+from srcndx.watcher import FileChangedEvent, Watcher
 
 
 class Debouncer:

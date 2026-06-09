@@ -1,4 +1,4 @@
-import queue
+﻿import queue
 import threading
 from collections.abc import Generator
 from dataclasses import dataclass
@@ -15,8 +15,8 @@ from watchdog.events import (
 )
 from watchdog.observers import Observer
 
-from mimir.config import MimirConfig, load_config
-from mimir.scanner import _PARSERS, _TRACKED_EXTENSIONS, _TRACKED_NAMES
+from srcndx.config import SrcndxConfig, load_config
+from srcndx.scanner import _PARSERS, _TRACKED_EXTENSIONS, _TRACKED_NAMES
 
 
 class EventKind(StrEnum):
@@ -101,7 +101,7 @@ class Watcher:
         self,
         repo_path: str | Path,
         extensions: frozenset[str] | None = None,
-        config: MimirConfig | None = None,
+        config: SrcndxConfig | None = None,
     ) -> None:
         self._root = Path(repo_path).resolve()
         if config is None:
