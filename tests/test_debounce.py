@@ -1,13 +1,13 @@
-import time
+﻿import time
 from pathlib import Path
 
-from mimir.config import MimirConfig
-from mimir.debounce import Debouncer
-from mimir.watcher import EventKind, Watcher
+from srcndx.config import SrcndxConfig
+from srcndx.debounce import Debouncer
+from srcndx.watcher import EventKind, Watcher
 
 
 def test_debouncer_batches_events(tmp_path: Path) -> None:
-    cfg = MimirConfig(debounce_seconds=0.2, exclude_dirs=[])
+    cfg = SrcndxConfig(debounce_seconds=0.2, exclude_dirs=[])
     with Debouncer(Watcher(tmp_path, config=cfg), quiet_seconds=0.2) as d:
         time.sleep(0.05)
         (tmp_path / "A.java").write_text("class A {}")
@@ -25,7 +25,7 @@ def test_debouncer_batches_events(tmp_path: Path) -> None:
 
 def test_debouncer_resets_on_new_event(tmp_path: Path) -> None:
     quiet = 0.3
-    cfg = MimirConfig(exclude_dirs=[])
+    cfg = SrcndxConfig(exclude_dirs=[])
     with Debouncer(Watcher(tmp_path, config=cfg), quiet_seconds=quiet) as d:
         time.sleep(0.05)
         (tmp_path / "A.java").write_text("class A {}")
@@ -40,7 +40,7 @@ def test_debouncer_resets_on_new_event(tmp_path: Path) -> None:
 
 
 def test_debouncer_returns_none_when_stopped_with_no_events(tmp_path: Path) -> None:
-    cfg = MimirConfig(exclude_dirs=[])
+    cfg = SrcndxConfig(exclude_dirs=[])
     watcher = Watcher(tmp_path, config=cfg)
     d = Debouncer(watcher, quiet_seconds=0.1)
     watcher.start()
@@ -50,7 +50,7 @@ def test_debouncer_returns_none_when_stopped_with_no_events(tmp_path: Path) -> N
 
 
 def test_debouncer_context_manager_starts_and_stops(tmp_path: Path) -> None:
-    cfg = MimirConfig(exclude_dirs=[])
+    cfg = SrcndxConfig(exclude_dirs=[])
     watcher = Watcher(tmp_path, config=cfg)
     d = Debouncer(watcher, quiet_seconds=0.1)
     with d:
@@ -59,7 +59,7 @@ def test_debouncer_context_manager_starts_and_stops(tmp_path: Path) -> None:
 
 
 def test_debouncer_batches_generator(tmp_path: Path) -> None:
-    cfg = MimirConfig(exclude_dirs=[])
+    cfg = SrcndxConfig(exclude_dirs=[])
     collected: list = []
     with Debouncer(Watcher(tmp_path, config=cfg), quiet_seconds=0.2) as d:
         time.sleep(0.05)
@@ -71,7 +71,7 @@ def test_debouncer_batches_generator(tmp_path: Path) -> None:
 
 
 def test_debouncer_contains_created_event(tmp_path: Path) -> None:
-    cfg = MimirConfig(exclude_dirs=[])
+    cfg = SrcndxConfig(exclude_dirs=[])
     with Debouncer(Watcher(tmp_path, config=cfg), quiet_seconds=0.2) as d:
         time.sleep(0.05)
         (tmp_path / "X.java").write_text("class X {}")

@@ -1,6 +1,6 @@
-from mimir.config import MimirConfig, load_config
-from mimir.debounce import Debouncer
-from mimir.models import (
+﻿from srcndx.config import SrcndxConfig, load_config
+from srcndx.debounce import Debouncer
+from srcndx.models import (
     GitStatus,
     IndexedFile,
     IndexedProject,
@@ -10,8 +10,8 @@ from mimir.models import (
     SymbolKind,
     Visibility,
 )
-from mimir.scanner import scan, scan_file
-from mimir.watcher import EventKind, FileChangedEvent, Watcher
+from srcndx.scanner import scan, scan_file
+from srcndx.watcher import EventKind, FileChangedEvent, Watcher
 
 __all__ = [
     "scan",
@@ -24,7 +24,7 @@ __all__ = [
     "Visibility",
     "GitStatus",
     "ProjectKind",
-    "MimirConfig",
+    "SrcndxConfig",
     "load_config",
     "Watcher",
     "Debouncer",

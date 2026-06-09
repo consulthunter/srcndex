@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
@@ -38,6 +38,12 @@ class ProjectKind(StrEnum):
     UNKNOWN = "unknown"
 
 
+class TestKind(StrEnum):
+    UNIT = "unit"
+    INTEGRATION = "integration"
+    E2E = "e2e"
+
+
 class IndexedSymbol(BaseModel):
     name: str
     qualified_name: str
@@ -49,6 +55,10 @@ class IndexedSymbol(BaseModel):
     is_test: bool
     signature: str
     annotations: list[str] = Field(default_factory=list)
+    is_endpoint: bool = False
+    http_method: str | None = None
+    route_path: str | None = None
+    test_kind: TestKind | None = None
 
 
 class IndexedFile(BaseModel):
@@ -59,6 +69,7 @@ class IndexedFile(BaseModel):
     churn_count: int
     symbols: list[IndexedSymbol]
     imports: list[str] = Field(default_factory=list)
+    test_framework: str | None = None
 
 
 class IndexedProject(BaseModel):

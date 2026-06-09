@@ -1,14 +1,14 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import tomllib
 from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-_CONFIG_FILE = ".mimir.toml"
+_CONFIG_FILE = ".srcndx.toml"
 
 
-class MimirConfig(BaseModel):
+class SrcndxConfig(BaseModel):
     debounce_seconds: float = 15.0
     watch_tracked_files: bool = True
     exclude_dirs: list[str] = Field(
@@ -28,7 +28,7 @@ class MimirConfig(BaseModel):
         ]
     )
     # Extends exclude_dirs without replacing the defaults.
-    # Use this in .mimir.toml to add exclusions while keeping built-in defaults.
+    # Use this in .srcndx.toml to add exclusions while keeping built-in defaults.
     additional_exclude_dirs: list[str] = Field(default_factory=list)
     exclude_extensions: list[str] = Field(default_factory=list)
     exclude_files: list[str] = Field(default_factory=list)
@@ -36,7 +36,7 @@ class MimirConfig(BaseModel):
     extra_tracked_names: dict[str, str] = Field(default_factory=dict)
     max_file_size_kb: int = 500
     persist_cache: bool = False
-    cache_file: str = ".mimir-cache.json"
+    cache_file: str = ".srcndx-cache.json"
     log_file: str | None = None
     log_level: str = "INFO"
 
@@ -45,9 +45,9 @@ class MimirConfig(BaseModel):
         return frozenset(self.exclude_dirs) | frozenset(self.additional_exclude_dirs)
 
 
-def load_config(repo_path: str | Path) -> MimirConfig:
+def load_config(repo_path: str | Path) -> SrcndxConfig:
     path = Path(repo_path) / _CONFIG_FILE
     if not path.exists():
-        return MimirConfig()
+        return SrcndxConfig()
     data = tomllib.loads(path.read_text(encoding="utf-8"))
-    return MimirConfig(**data)
+    return SrcndxConfig(**data)

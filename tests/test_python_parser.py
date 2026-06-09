@@ -1,9 +1,9 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import pytest
 
-from mimir.models import SymbolKind, Visibility
-from mimir.parsers.python import PythonParser
+from srcndx.models import SymbolKind, Visibility
+from srcndx.parsers.python import PythonParser
 
 SIMPLE_MODULE = b"""
 class Service:

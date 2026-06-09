@@ -1,16 +1,17 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import tree_sitter_c_sharp
 from tree_sitter import Language, Node
 
-from mimir.models import (
+from srcndx.analysis import classify_test, detect_endpoint, detect_test_framework
+from srcndx.models import (
     GitStatus,
     IndexedFile,
     IndexedSymbol,
     SymbolKind,
     Visibility,
 )
-from mimir.parsers.base import BaseParser
+from srcndx.parsers.base import BaseParser
 
 _VISIBILITY_KEYWORDS = {"public", "private", "protected", "internal"}
 
@@ -30,23 +31,22 @@ def _visibility(node: Node, source: bytes) -> Visibility:
 
 
 def _collect_attributes(node: Node, source: bytes) -> list[str]:
+    """Return full attribute text (e.g. 'HttpGet("/path")') for each attribute."""
     attrs: list[str] = []
     for child in node.children:
         if child.type == "attribute_list":
             for attr in child.children:
                 if attr.type == "attribute":
-                    name_node = next(
-                        (c for c in attr.children if c.type == "identifier"), None
-                    )
-                    if name_node:
-                        attrs.append(source[name_node.start_byte:name_node.end_byte].decode())
+                    attrs.append(source[attr.start_byte:attr.end_byte].decode("utf-8", errors="replace"))
     return attrs
 
 
 def _is_test(name: str, file_path: str, attributes: list[str]) -> bool:
+    # Strip argument lists before checking names, e.g. "InlineData(1,2)" → "InlineData"
+    attr_names = {a.split("(")[0].strip() for a in attributes}
     path = file_path.lower()
     return (
-        bool(_TEST_ATTRIBUTES.intersection(attributes))
+        bool(_TEST_ATTRIBUTES.intersection(attr_names))
         or "test" in path.rsplit("/", 1)[-1].lower()
         or name.lower().startswith("test")
     )
@@ -76,6 +76,7 @@ class CSharpParser(BaseParser):
             churn_count=0,
             symbols=symbols,
             imports=imports,
+            test_framework=detect_test_framework(imports, "csharp"),
         )
 
     def _extract_imports(self, root: Node, source: bytes) -> list[str]:
@@ -163,6 +164,9 @@ class CSharpParser(BaseParser):
         vis = _visibility(node, source)
         attrs = _collect_attributes(node, source)
         sig = self.node_text(node, source).split("{")[0].strip()
+        is_test = _is_test(name, file_path, attrs)
+        is_ep, http_method, route_path = detect_endpoint(attrs)
+        tk = classify_test(file_path, attrs) if is_test else None
 
         symbols.append(
             IndexedSymbol(
@@ -173,9 +177,13 @@ class CSharpParser(BaseParser):
                 start_line=node.start_point[0] + 1,
                 end_line=node.end_point[0] + 1,
                 visibility=vis,
-                is_test=_is_test(name, file_path, attrs),
+                is_test=is_test,
                 signature=sig,
                 annotations=attrs,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )
 
@@ -210,6 +218,9 @@ class CSharpParser(BaseParser):
         body = self.first_child_of_type(node, "block")
         sig_end = body.start_byte if body else node.end_byte
         sig = source[node.start_byte:sig_end].decode("utf-8", errors="replace").strip()
+        is_test = _is_test(name, file_path, attrs)
+        is_ep, http_method, route_path = detect_endpoint(attrs)
+        tk = classify_test(file_path, attrs) if is_test else None
 
         symbols.append(
             IndexedSymbol(
@@ -220,9 +231,13 @@ class CSharpParser(BaseParser):
                 start_line=node.start_point[0] + 1,
                 end_line=node.end_point[0] + 1,
                 visibility=vis,
-                is_test=_is_test(name, file_path, attrs),
+                is_test=is_test,
                 signature=sig,
                 annotations=attrs,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )
 
@@ -259,3 +274,4 @@ class CSharpParser(BaseParser):
                 annotations=attrs,
             )
         )
+

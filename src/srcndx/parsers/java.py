@@ -1,20 +1,21 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import tree_sitter_java
 from tree_sitter import Language, Node
 
-from mimir.models import (
+from srcndx.analysis import classify_test, detect_endpoint, detect_test_framework
+from srcndx.models import (
     GitStatus,
     IndexedFile,
     IndexedSymbol,
     SymbolKind,
     Visibility,
 )
-from mimir.parsers.base import BaseParser
+from srcndx.parsers.base import BaseParser
 
 _VISIBILITY_KEYWORDS = {"public", "private", "protected"}
 
-_TEST_ANNOTATIONS = {"@Test", "@ParameterizedTest", "@RepeatedTest", "@TestFactory"}
+_TEST_ANNOTATION_PREFIXES = ("@Test", "@ParameterizedTest", "@RepeatedTest", "@TestFactory")
 
 
 def _visibility(modifiers: Node, source: bytes) -> Visibility:
@@ -26,7 +27,10 @@ def _visibility(modifiers: Node, source: bytes) -> Visibility:
 
 
 def _is_test_annotation(annotations: list[str]) -> bool:
-    return bool(_TEST_ANNOTATIONS.intersection(annotations))
+    return any(
+        any(ann.startswith(p) for p in _TEST_ANNOTATION_PREFIXES)
+        for ann in annotations
+    )
 
 
 def _is_test_class(class_name: str, file_path: str) -> bool:
@@ -60,6 +64,7 @@ class JavaParser(BaseParser):
             churn_count=0,
             symbols=symbols,
             imports=imports,
+            test_framework=detect_test_framework(imports, "java"),
         )
 
     def _extract_imports(self, root: Node, source: bytes) -> list[str]:
@@ -118,6 +123,9 @@ class JavaParser(BaseParser):
 
         sig = self.node_text(node, source).split("{")[0].strip()
 
+        is_ep, http_method, route_path = detect_endpoint(annotations)
+        tk = classify_test(file_path, annotations) if is_test else None
+
         symbols.append(
             IndexedSymbol(
                 name=name,
@@ -130,6 +138,10 @@ class JavaParser(BaseParser):
                 is_test=is_test,
                 signature=sig,
                 annotations=annotations,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )
 
@@ -164,6 +176,9 @@ class JavaParser(BaseParser):
 
         sig = self._method_signature(node, source)
 
+        is_ep, http_method, route_path = detect_endpoint(annotations)
+        tk = classify_test(file_path, annotations) if is_test else None
+
         symbols.append(
             IndexedSymbol(
                 name=name,
@@ -176,13 +191,17 @@ class JavaParser(BaseParser):
                 is_test=is_test,
                 signature=sig,
                 annotations=annotations,
+                is_endpoint=is_ep,
+                http_method=http_method,
+                route_path=route_path,
+                test_kind=tk,
             )
         )
 
     def _collect_annotations(self, modifiers_node: Node, source: bytes) -> list[str]:
         annotations = []
         for child in modifiers_node.children:
-            if child.type == "marker_annotation":
+            if child.type in ("marker_annotation", "annotation"):
                 annotations.append(self.node_text(child, source))
         return annotations
 

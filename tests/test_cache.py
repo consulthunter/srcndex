@@ -1,7 +1,7 @@
-from pathlib import Path
+﻿from pathlib import Path
 
-from mimir.cache import ScanCache, file_hash
-from mimir.models import GitStatus, IndexedFile
+from srcndx.cache import ScanCache, file_hash
+from srcndx.models import GitStatus, IndexedFile
 
 
 def _dummy_file(path: str = "src/Foo.java") -> IndexedFile:

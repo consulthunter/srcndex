@@ -1,8 +1,8 @@
-import time
+﻿import time
 from pathlib import Path
 
-from mimir.config import MimirConfig
-from mimir.watcher import EventKind, FileChangedEvent, Watcher
+from srcndx.config import SrcndxConfig
+from srcndx.watcher import EventKind, FileChangedEvent, Watcher
 
 
 def _drain(watcher: Watcher, timeout: float = 2.0) -> list[FileChangedEvent]:
@@ -135,7 +135,7 @@ def test_untracked_files_still_ignored(tmp_path: Path) -> None:
 
 
 def test_watch_tracked_files_false_ignores_yaml(tmp_path: Path) -> None:
-    cfg = MimirConfig(watch_tracked_files=False, exclude_dirs=[])
+    cfg = SrcndxConfig(watch_tracked_files=False, exclude_dirs=[])
     with Watcher(tmp_path, config=cfg) as watcher:
         time.sleep(0.1)
         (tmp_path / "config.yml").write_text("key: value")
@@ -150,7 +150,7 @@ def test_watch_tracked_files_false_ignores_yaml(tmp_path: Path) -> None:
 def test_watcher_exclude_dir(tmp_path: Path) -> None:
     vendor = tmp_path / "vendor"
     vendor.mkdir()
-    cfg = MimirConfig(exclude_dirs=["vendor"])
+    cfg = SrcndxConfig(exclude_dirs=["vendor"])
     with Watcher(tmp_path, config=cfg) as watcher:
         time.sleep(0.1)
         (vendor / "Lib.java").write_text("class Lib {}")
@@ -163,7 +163,7 @@ def test_watcher_exclude_dir(tmp_path: Path) -> None:
 
 
 def test_watcher_exclude_file(tmp_path: Path) -> None:
-    cfg = MimirConfig(exclude_files=["package-lock.json"], exclude_dirs=[])
+    cfg = SrcndxConfig(exclude_files=["package-lock.json"], exclude_dirs=[])
     with Watcher(tmp_path, config=cfg) as watcher:
         time.sleep(0.1)
         (tmp_path / "package-lock.json").write_text("{}")
@@ -176,7 +176,7 @@ def test_watcher_exclude_file(tmp_path: Path) -> None:
 
 
 def test_watcher_exclude_extension(tmp_path: Path) -> None:
-    cfg = MimirConfig(exclude_extensions=[".md"], exclude_dirs=[])
+    cfg = SrcndxConfig(exclude_extensions=[".md"], exclude_dirs=[])
     with Watcher(tmp_path, config=cfg) as watcher:
         time.sleep(0.1)
         (tmp_path / "README.md").write_text("# docs")
